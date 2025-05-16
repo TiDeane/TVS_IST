@@ -21,14 +21,16 @@ public class Client {
 
   // Creates a client with a single terminal. The provided terminal CAN be null?
   public Client(String name, int taxNumber, Terminal term) {
-    if (name.length() > 40 || term == null) {
+    if (name.length() > 40) {
       throw new IllegalArgumentException();
     }
 
     this.name = name;
     this.taxNumber = taxNumber;
     terminals = new ArrayList<>();
-    terminals.add(term);
+    if (term != null) {
+      terminals.add(term);
+    }
     friends = new ArrayList<>();
     points = 20;
   }

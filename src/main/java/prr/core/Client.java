@@ -14,12 +14,12 @@ public class Client {
   private int taxNumber;
   // 0 to 200 points
   private int points;
-   // 1 to 9 terminals
+   // 1 to 9 terminals -> should be 0 to 9 now, since Terminal can be null
   private List<Terminal> terminals;
   private List<Client> friends; // maximum of (5 * numberOfTerminals() - 3) friends
 
 
-  // Creates a client with a single terminal. The provided terminal cannot be null
+  // Creates a client with a single terminal. The provided terminal CAN be null?
   public Client(String name, int taxNumber, Terminal term) {
     if (name.length() > 40 || term == null) {
       throw new IllegalArgumentException();

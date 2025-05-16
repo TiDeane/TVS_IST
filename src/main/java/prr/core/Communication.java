@@ -10,7 +10,6 @@ import java.time.Duration;
 public class Communication {
 
   int size = 0;
-  int duration = 0;
   double cost = 0;
   Terminal receiver;
   Terminal sender;
@@ -19,22 +18,21 @@ public class Communication {
   Instant timestampEnd;
 
 
-  public Communication(CommunicationType type, Terminal to, Terminal from) {
+  private Communication(CommunicationType type, Terminal to, Terminal from) {
     this.type = type;
     this.receiver = to;
     this.sender = from;
     this.timestampBegin = Instant.now();
-  
   }
 
   public static Communication textCommunication(Terminal to, Terminal from, int length) {
-    if(length < 0){
+    if (length < 0) {
       throw new InvalidOperationException("Length can't be negative");
     }
-    Communication text = new Communication(CommunicationType.SMS,to,from);
+    Communication text = new Communication(CommunicationType.SMS, to, from);
     text.size = (int) Math.ceil(length / 100.0);
-    text.cost = text.computeCost();
-    return null;
+    //text.cost = text.computeCost();
+    return text;
   }
 
   public static Communication voiceCommunication(Terminal to, Terminal from) {
@@ -42,10 +40,9 @@ public class Communication {
     return voice;
   }
 
-
+  // sets duration for voice communication (currently unused... maybe Terminal should call it?)
   public void duration(int duration) {
-    // TODO: ???????????????????????????????????????
-    return;
+    this.size = duration;
   }
 
   public Terminal to() {
@@ -57,30 +54,32 @@ public class Communication {
   }
 
   double computeCost() {
-    int points = sender.balance();
+    int points = sender.getClient().getPoints();
     int numFriends = sender.getClient().numberOfFriends();
 
-    timestampEnd = Instant.now();
-    Duration duration_time = Duration.between(timestampBegin, timestampEnd);
-    int size = (int) duration_time.getSeconds(); 
+    if (type == CommunicationType.VOICE) {
+      timestampEnd = Instant.now();
+      Duration duration_time = Duration.between(timestampBegin, timestampEnd);
+      size = (int) duration_time.getSeconds(); 
+    }
 
-    if(size == 0){
+    if (size == 0) {
       return 0;
     }
 
-    if (size < 10){
+    if (size < 10) {
       return points > 100 ? 1 : 2;
     }
 
-    if(size < 120){
-      if(points < 75){
+    if (size < 120) {
+      if (points < 75) {
         return type == CommunicationType.SMS ? 6 : 12;
       } else {
-        if (type == CommunicationType.SMS){
+        if (type == CommunicationType.SMS) {
           return 4;
-        }
-        else
+        } else {
           return numFriends < 4 ? 8 : 5 ;
+        }
       }
     }
 

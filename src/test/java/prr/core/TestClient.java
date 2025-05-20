@@ -60,7 +60,7 @@ public class TestClient {
      * Chosen FAILURE test cases: 2, 4, 10 and 12
      **/
 
-    @Test // test case 2
+    @Test // Test case 2
     public void testClientWithNameTooLong() {
         // Arrange
         String name = "A".repeat(41); // Off point
@@ -74,7 +74,7 @@ public class TestClient {
         });
     }
 
-    @Test // test case 4
+    @Test // Test case 4
     public void testClientWithNoTerminals() {
         // Arrange
         String name = "A";
@@ -86,7 +86,7 @@ public class TestClient {
         });
     }
 
-    @Test // test case 10
+    @Test // Test case 10
     public void testClientWithTooManyPoints() {
         // Arrange
         Client client = new Client("1234567", 12345, baseTerminal);
@@ -97,7 +97,7 @@ public class TestClient {
         });
     }
 
-    @Test // test case 12
+    @Test // Test case 12
     public void testClientWithTooManyFriends() {
         // Arrange
         Client client = new Client("123456789", 12345, baseTerminal);
@@ -110,7 +110,7 @@ public class TestClient {
 
         // Act + Assert
         assertThrows(InvalidOperationException.class, () -> {
-            for (int i = 0; i < numFriends; i++) { // Off point: 23 > 5*4 - 3 = 17
+            for (int i = 0; i < numFriends; i++) { // Off point: 23 > 5*5 - 3 = 22
                 client.addFriend(new Client("F" + i, 1, new Terminal("TF" + i, null)));
             }
         });

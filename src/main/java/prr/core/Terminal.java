@@ -15,7 +15,7 @@ public class Terminal {
 
     // creates a terminal with a given identifier and associated to the given client.
     Terminal(String id, Client client) {
-      if (id == null || client == null) throw new IllegalArgumentException("Invalid terminal or client");
+      if (id == null) throw new IllegalArgumentException("Invalid id");
       this.id = id;
       this.client = client;
       this.mode = TerminalMode.OFF;
@@ -137,6 +137,8 @@ public class Terminal {
         int cost = (int) currentCommunication.getCost();
         currentCommunication.from().balance += cost;
         currentCommunication.to().balance += (int) cost;
+      } else {
+        throw new InvalidInvocationException("No ongoing communication");
       }
     }
 

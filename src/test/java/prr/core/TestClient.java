@@ -1,80 +1,118 @@
 package prr.core;
 
 import org.testng.annotations.Test;
-import org.testng.annotations.DataProvider;
 import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.DataProvider;
 import static org.testng.Assert.*;
 import prr.core.exceptions.InvalidOperationException;
 
 @Test
 public class TestClient {
-    private Client client;
-    private Terminal mockTerminal;
+    private Terminal baseTerminal;
 
-    @BeforeMethod
-    private void setup() {
-        Client mockOwner = new Client("Mock Owner", 99999, null);
-        mockTerminal = new Terminal("123", mockOwner);
-        client = new Client("Test Client", 12345, mockTerminal);
+    @BeforeMethod private void setup() {
+        baseTerminal = new Terminal("1234", null);
     }
 
+    /**
+     * Chosen SUCCESS test cases: 1, 5, 7 and 11
+     **/
+
     @DataProvider
-    private Object[][] provideTestCases() {
+    public Object[][] computeDataForValidClient() {
         return new Object[][] {
-                // Test Cases 1-12 with respective data
-                // {namelength, numberOfTerminals , points, numberOfFriends, expected result}
-                {40, 2, 1, 0, true},  // Case 1
-                {41, 3, 2, 2, false}, // Case 2
-                {0, 1, 3, 1, true},   // Case 3
-                {1, 0, 4, 3, false},  // Case 4
-                {2, 9, 5, 4, true},   // Case 5
-                {3, 10, 6, 5, false}, // Case 6
-                {4, 4, 0, 6, true},  // Case 7
-                {5, 6, -1, 7, false},// Case 8
-                {6, 7, 200, 8, true}, // Case 9
-                {7, 8, 201, 9, false}, // Case 10
-                {8, 5, 7, 22, true},   // Case 11
-                {9, 5, 8, 23, false}  // Case 12
+            // name, numTerminals, points, numFriends
+            { "A".repeat(40), 2, 1, 2 },  // ON: name length = 40
+            { "12", 9, 5, 4 },            // ON: numTerminals = 9
+            { "1234", 4, 0, 10 },         // ON: points = 0
+            { "12345678", 5, 7, 22 }      // ON: numFriends = 5 * numTerminals - 3
         };
     }
 
-    @Test(dataProvider = "provideTestCases")
-    public void testAllCases(int nameLength, int terminals, int points, int friends, boolean expectedResult) {
-        boolean isValid = true;
-        try{
-            // Setup client with initial name
-            String name = "a".repeat(nameLength);
-            Client testClient = new Client(name, 12345, mockTerminal);
+    @Test(dataProvider = "computeDataForValidClient")
+    public void testValidClient(String name, int numTerminals, int points, int numFriends) {
+        // Arrange
+        Client client;
+        
+        // Act
+        client = new Client(name, 12345, baseTerminal);
 
-            // Adjust number of terminals
-            for (int i = 2; i <= terminals; i++) {
-                testClient.addTerminal(new Terminal(String.valueOf(i), testClient));
-            }
-            if (terminals == 0) {
-                testClient.removeTerminal(mockTerminal);
-            }
+        client.updateName(name);
+        client.updatePoints(points);
 
-            // Set points
-            try {
-                testClient.updatePoints(points);
-            } catch (Exception e) {
-                throw new Exception("Unexpected exception for valid points");
-            }
-
-            // Add friends
-            for (int i = 0; i < friends; i++) {
-                Client friend = new Client("Friend" + i, 10000 + i, new Terminal("F" + i, testClient));
-                try {
-                    testClient.addFriend(friend);
-                } catch (Exception e) {
-                    throw new Exception("Unexpected exception for valid friends");
-                }
-            }
-
-        } catch (Exception e){
-            isValid = false;
+        for (int i = 1; i < numTerminals; i++) {
+            client.addTerminal(new Terminal("T" + i, client));
         }
 
-        assertEquals(isValid, expectedResult, "Test case failed for nameLength=" + nameLength + ", terminals=" + terminals + ", points=" + points + ", friends=" + friends);
+        for (int i = 0; i < numFriends; i++) {
+            client.addFriend(new Client("F" + i, 1, new Terminal("TF" + i, null)));
+        }
+        
+        // Assert
+        assertEquals(client.getName(), name);
+        assertEquals(client.getPoints(), points);
+        assertEquals(client.numberOfTerminals(), numTerminals);
+        assertEquals(client.numberOfFriends(), numFriends);
+    }
+
+
+    /**
+     * Chosen FAILURE test cases: 2, 4, 10 and 12
+     **/
+
+    @Test // test case 2
+    public void testClientWithNameTooLong() {
+        // Arrange
+        String name = "A".repeat(41); // Off point
+
+        // Act + Assert
+        assertThrows(IllegalArgumentException.class, () -> {
+            new Client(name, 12345, baseTerminal);
+        });
+        assertThrows(InvalidOperationException.class, () -> {
+            (new Client("A", 12345, baseTerminal)).updateName(name);
+        });
+    }
+
+    @Test // test case 4
+    public void testClientWithNoTerminals() {
+        // Arrange
+        String name = "A";
+        Client client = new Client(name, 12345, baseTerminal);
+
+        // Act + Assert
+        assertThrows(InvalidOperationException.class, () -> {
+            client.removeTerminal(baseTerminal); // numTerminals = 0 is Off point
+        });
+    }
+
+    @Test // test case 10
+    public void testClientWithTooManyPoints() {
+        // Arrange
+        Client client = new Client("1234567", 12345, baseTerminal);
+
+        // Act + Assert
+        assertThrows(InvalidOperationException.class, () -> {
+            client.updatePoints(201); // Off point
+        });
+    }
+
+    @Test // test case 12
+    public void testClientWithTooManyFriends() {
+        // Arrange
+        Client client = new Client("123456789", 12345, baseTerminal);
+        int numTerminals = 5;
+        int numFriends = 23; // Off point with numTerminals = 5
+
+        for (int i = 1; i < numTerminals; i++) {
+            client.addTerminal(new Terminal("T" + i, client));
+        }
+
+        // Act + Assert
+        assertThrows(InvalidOperationException.class, () -> {
+            for (int i = 0; i < numFriends; i++) { // Off point: 23 > 5*4 - 3 = 17
+                client.addFriend(new Client("F" + i, 1, new Terminal("TF" + i, null)));
+            }
+        });
     }
 }

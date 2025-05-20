@@ -112,4 +112,14 @@ public class Client {
   public int numberOfTerminals() {
     return terminals.size();
   }
+
+  public List<Terminal> getTerminals() {
+    return new ArrayList<>(this.terminals);
+  }
+
+  public List<Client> getFriends() {
+    return new ArrayList<>(this.friends);
+  }
 }
+
+

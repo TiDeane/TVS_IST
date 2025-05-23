@@ -11,7 +11,7 @@ public class TestClient {
     private Terminal baseTerminal;
 
     @BeforeMethod private void setup() {
-        baseTerminal = new Terminal("1234", null);
+        baseTerminal = new Terminal("1234");
     }
 
     /**
@@ -39,13 +39,15 @@ public class TestClient {
 
         client.updateName(name);
         client.updatePoints(points);
-
+        Terminal terminal;
         for (int i = 1; i < numTerminals; i++) {
-            client.addTerminal(new Terminal("T" + i, client));
+            terminal = new Terminal("T" + i);
+            client.addTerminal(terminal);
+            terminal.setClient(client);
         }
 
         for (int i = 0; i < numFriends; i++) {
-            client.addFriend(new Client("F" + i, 1, new Terminal("TF" + i, null)));
+            client.addFriend(new Client("F" + i, 1, new Terminal("TF" + i)));
         }
         
         // Assert
@@ -103,15 +105,17 @@ public class TestClient {
         Client client = new Client("123456789", 12345, baseTerminal);
         int numTerminals = 5;
         int numFriends = 23; // Off point with numTerminals = 5
-
+        Terminal  terminal ;
         for (int i = 1; i < numTerminals; i++) {
-            client.addTerminal(new Terminal("T" + i, client));
+            terminal = new Terminal("TF" + i);
+            client.addTerminal(terminal);
+
         }
 
         // Act + Assert
         assertThrows(InvalidOperationException.class, () -> {
             for (int i = 0; i < numFriends; i++) { // Off point: 23 > 5*5 - 3 = 22
-                client.addFriend(new Client("F" + i, 1, new Terminal("TF" + i, null)));
+                client.addFriend(new Client("F" + i, 1, new Terminal("TF" + i)));
             }
         });
     }

@@ -14,10 +14,9 @@ public class Terminal {
   private Communication currentCommunication;
 
     // creates a terminal with a given identifier and associated to the given client.
-    Terminal(String id, Client client) {
+    Terminal(String id) {
       if (id == null) throw new IllegalArgumentException("Invalid id");
       this.id = id;
-      this.client = client;
       this.mode = TerminalMode.OFF;
       this.balance = 0;
       this.previousMode = TerminalMode.OFF;
@@ -141,7 +140,7 @@ public class Terminal {
         throw new InvalidInvocationException("No ongoing communication");
       }
     }
-
+    public void setClient(Client client) { this.client = client; }
     public Client getClient() {
       return this.client;
     } 

@@ -28,9 +28,8 @@ public class Client {
     this.name = name;
     this.taxNumber = taxNumber;
     terminals = new ArrayList<>();
-    if (term != null) {
-      terminals.add(term);
-    }
+    terminals.add(term);
+    term.setClient(this);
     friends = new ArrayList<>();
     points = 20;
   }
@@ -88,6 +87,7 @@ public class Client {
     }
 
     terminals.add(terminal);
+    terminal.setClient(this);
   }
 
   public boolean removeTerminal(Terminal terminal) {
